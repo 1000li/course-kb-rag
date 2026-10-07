@@ -14,6 +14,23 @@
 py -3 -m pip install -e .    # 或按 pyproject.toml 逐条安装固定版本
 ```
 
+## 换一台机器继续工作（clone 后清单）
+
+```bash
+git clone https://github.com/1000li/course-kb-rag.git
+cd course-kb-rag
+py -3 -m pip install -e .
+py -3 -m src.serve           # http://127.0.0.1:8000
+```
+
+数据库 `db/course_kb.db` 已随仓库分发，**clone 下来即可演示，无需重建索引**。三样东西不随仓库走，按需补：
+
+1. **`.env`（唯一必补项）**：写入 `DEEPSEEK_API_KEY=sk-...`。没有它网页/CLI 照常启动，仅 LLM 组织回答不可用（检索、拒答、版本对比演示不受影响）
+2. **embedding 模型**：首次执行检索时自动下载（约 100MB），之后离线可用
+3. **`scripts/vec0.dll`（仅 datasette 需要）**：二进制不入库。要用 datasette 浏览数据库时，从已安装的 sqlite-vec 包里复制：`py -3 -c "import sqlite_vec, pathlib, shutil; p=pathlib.Path(sqlite_vec.__file__).parent/'vec0.dll'; shutil.copy(p,'scripts/vec0.dll')"`
+
+网络提示：直连 GitHub 不通的网络环境下，先配代理再 git 操作（如 `git config http.proxy http://127.0.0.1:<端口>`）。
+
 ## 一键跑通（无需 API key）
 
 ```bash
