@@ -104,7 +104,7 @@
     margin:auto;width:100%;max-width:var(--composer-w);
     padding:28px 20px 34px;
   }
-  .welcome{max-width:600px;margin:0 auto;text-align:center;}
+  .welcome{text-align:center;}
 
   /* ---------- 消息区：滚动容器 ---------- */
   .chat{
@@ -200,6 +200,12 @@
   .ecard:hover{background:var(--lemon);}
   .ecard .note{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:3px;letter-spacing:.03em;}
 
+  /* 双卡网格内的条目：固定等高、纵向居中 —— 行对齐统一，条目少的一卡留白补齐，不拉伸条目 */
+  .example-grid .ecard{
+    height:42px;display:flex;align-items:center;justify-content:flex-start;
+    overflow:hidden;
+  }
+
   /* 「更多示例 ▾」低调入口 + 展开的版本对比卡 */
   .more-toggle{
     display:block;margin:14px auto 0;
@@ -283,9 +289,10 @@
     .egroup{padding:9px;}
     .egroup h3{font-size:9.5px;letter-spacing:.1em;margin-bottom:6px;}
     .ecard{font-size:11px;padding:6px 7px;}
+    .example-grid .ecard{height:50px;line-height:1.45;}
+    .expanel .ecard{font-size:11px;}
     .more-toggle{font-size:10.5px;margin-top:10px;padding:5px 11px;}
     .expanel{margin:0 12px 9px;padding:11px 12px;}
-    .expanel .example-grid{grid-template-columns:1fr;}
     .composer{padding:0 12px 10px;}
     .app.onboarding .composer{padding:0;}
     .q-input{min-height:44px;max-height:120px;padding:11px 12px 9px;font-size:15px;}
@@ -498,8 +505,11 @@
       d.citations.forEach(c => {
         const t = el('span', 'cite');
         t.title = 'chunk: ' + c.chunk_id;
-        t.appendChild(document.createTextNode(
-          '第' + c.lesson_no + '课 · ' + (c.section_title || '未分节') + ' · '));
+        t.appendChild(document.createTextNode('第' + c.lesson_no + '课'));
+        if (c.section_title) {
+          t.appendChild(document.createTextNode(' · ' + c.section_title));
+        }
+        t.appendChild(document.createTextNode(' · '));
         t.appendChild(el('span', 'page', 'P' + c.page_range));
         list.appendChild(t);
       });

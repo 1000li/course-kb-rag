@@ -63,7 +63,14 @@ def load_abstain_rule(conn) -> dict:
     return json.loads(row["threshold"])
 
 
-def should_abstain(top_chunks: list[dict], rule: dict) -> bool:
+def should_abstain(top_chunks: list[dict], rule: dict,
+                   lesson_filter: int | None = None) -> bool:
+    # 课号 scope（查询理解命中"第N课"）：双信号阈值是按全库检索标定的，与课内
+    # 小语料的绝对分值不可比（BM25 语料收缩 + 1-L2 分值压缩），不走与门——
+    # 仅当 scope 为空（课号不存在）时拒答；有块则交给 LLM 依据块作答
+    # （系统提示词已强制只依据块，课内没有的内容 LLM 会说没有）
+    if lesson_filter is not None:
+        return not top_chunks
     vs = [c["vec_score"] for c in top_chunks if c["vec_score"] is not None]
     bs = [c["bm25_score"] for c in top_chunks if c["bm25_score"] is not None]
     max_vec = max(vs) if vs else float("-inf")
@@ -92,7 +99,7 @@ def ask(conn, retriever: Retriever, question: str,
     t0 = time.monotonic()
     res = retriever.search(question, scope_doc_id=scope_doc_id)
     top5 = res["top_chunks"]
-    abstained = should_abstain(top5, rule)
+    abstained = should_abstain(top5, rule, lesson_filter=res["lesson_filter"])
 
     record = {
         "ts": utcnow(), "query": question, "scope_doc_id": res["scope_doc_id"],

@@ -111,6 +111,7 @@ def main() -> int:
             "calibration": q.get("calibration", True),
             "expected": q["expected_lesson_no"], "note": q["note"],
             "hit_rank": hit_rank, "top1_rrf": res["top1_rrf"],
+            "lesson_filter": res["lesson_filter"],
             "max_vec5": mv, "max_bm5": mb, "top5": top5,
         })
 
@@ -129,8 +130,14 @@ def main() -> int:
         calib_note += (f"\n\n**标定集排除**：{excluded}（calibration=false，不参与 "
                        f"tv/tb 标定与拒答率/误拒率统计，逐题明细仍展示其实际表现）")
     for x in results:
-        x["abstained"] = (rule is not None and x["max_vec5"] < rule["vec_max_top5"]
-                          and x["max_bm5"] < rule["bm25_max_top5"])
+        # 与 qa.should_abstain 同口径：课号 scope 题不走双信号与门（分值与全库
+        # 标定不可比），仅空 scope 拒答；其余题走与门
+        if x["lesson_filter"] is not None:
+            x["abstained"] = not x["top5"]
+        else:
+            x["abstained"] = (rule is not None
+                              and x["max_vec5"] < rule["vec_max_top5"]
+                              and x["max_bm5"] < rule["bm25_max_top5"])
     abstain_rate = (sum(1 for x in abs_cal if x["abstained"]) / len(abs_cal)) if rule else 0
     false_rate = (sum(1 for x in ans_cal if x["abstained"]) / len(ans_cal)) if rule else 0
 
