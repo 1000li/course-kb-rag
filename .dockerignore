@@ -1,0 +1,12 @@
+.env
+.git
+.gitignore
+__pycache__/
+*.egg-info/
+tmp/
+data/interim/
+data/logs/
+data/raw/
+data/export/
+scripts/vec0.dll
+docs/

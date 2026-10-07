@@ -1,0 +1,4 @@
+[http] GET / -> "GET / HTTP/1.1" 200 -
+[http] GET /healthz -> "GET /healthz HTTP/1.1" 200 -
+[http] POST /api/ask -> "POST /api/ask HTTP/1.1" 400 -
+[http] POST /api/ask -> "POST /api/ask HTTP/1.1" 200 -
