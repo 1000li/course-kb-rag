@@ -3,6 +3,8 @@ __pycache__/
 data/interim/
 data/logs/
 db/*.db
+!db/course_kb.db
+data/kb.sqlite
 tmp/v12/
 scripts/vec0.dll
 *.egg-info/

@@ -71,6 +71,24 @@ py -3 -m src.qa "讲义中认为 AI 未来有哪些发展趋势？"            #
 
 叙事要点：**旧版不是答不了，而是只能拼凑**——v1.0 没有第 15 课，只能从第 1/4/7 课的零散未来话题拼出浅层答案；v1.1+ 补入专门篇章后，同一问题精准命中第 15 课，答案有明确出处（「第15课 · 二、AI 的未来趋势与伦理挑战 · P72」）。
 
+## 公网部署（Render 免费档）
+
+仓库自带 `Dockerfile`（python:3.13-slim，构建期预热 embedding 模型避免冷启动下载超时）与 `db/course_kb.db`（事实库随镜像分发）。步骤要点：
+
+1. Render → **New Web Service** → 连接本仓库 → Runtime 选 **Docker**
+2. 环境变量：
+   - `DEEPSEEK_API_KEY`（必填，场景 1 的 LLM 路径）
+   - `DEMO_TOKEN`（可选但建议：设置后全站启用密码闸门）
+   - `PYTHONUTF8=1`（保险；镜像内已默认）
+3. 健康检查路径填 `/healthz`；Render 自动注入 `$PORT`，serve.py 已适配
+
+安全说明：
+
+- **DEMO_TOKEN 闸门**：GET / 出密码页，校验通过才发 HttpOnly Cookie（值为 token 的 sha256，不落明文）；无有效 Cookie 时 /api/ask 返回 401。不设 DEMO_TOKEN 则完全无闸（本地开发体验不变）
+- **速率限制**：/api/ask 按客户端 IP 内存滑动窗口限流，默认 10 次/分钟（可用 `RATE_LIMIT_PER_MIN` 调整），超限返回 429——防止 DeepSeek 调用被打爆产生费用
+- **key 绝不入库**：`.env` 在 `.gitignore`/`.dockerignore` 双重排除；DeepSeek key 只走 Render 环境变量
+- 本地无 `.env` 也能跑：检索、拒答、版本对比全部可用，仅场景 1 的 LLM 组织回答路径报"缺 key"提示
+
 ## 数据浏览（Datasette）
 
 ```bash

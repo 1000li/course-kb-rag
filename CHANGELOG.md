@@ -93,6 +93,16 @@
 - README.md：环境要求 / 一键跑通预期输出 / .env 说明 / 三场景演示动线 / Datasette 入口 / 目录结构 / 可复现性。场景 3 用裁定措辞 q18「讲义中认为 AI 未来有哪些发展趋势？」——v1.0 从第 1/4/7 课拼凑浅层答案，v1.2 精准命中第 15 课；叙事为「旧版不是答不了，而是只能拼凑」。
 - 注意：本次验证期间 owner 有过一次 commit，把临时目录 tmp/m7_backup/ 提交了进去；该目录已在工作区删除（git status 显示 D），下次 commit 自然清掉。
 
+### 公网部署准备（v0.4，Render 免费档）
+
+- **密码闸门**（src/serve.py）：`DEMO_TOKEN` 环境变量设置即启用——GET / 出瑞士风密码页（独立内联小页面，沿用白底点阵 + 克莱因蓝 + 硬边框），POST /api/login 校验通过后发 HttpOnly Cookie（值为 token 的 sha256 + hmac 恒定时间比较，不落明文）；无有效 Cookie /api/ask 返回 401。未设置则完全无闸，本地体验不变。
+- **速率限制**：/api/ask 按客户端 IP（尊重 X-Forwarded-For）内存滑动窗口 10 次/分（`RATE_LIMIT_PER_MIN` 可调），超限 429；无论是否设闸门都启用——护住 DeepSeek 调用费用。
+- 部署适配：PORT 读环境变量（Render 注入 $PORT），新增 GET /healthz（恒 200，过闸门前）。
+- **Dockerfile**（python:3.13-slim）：pip install . → 构建期预热 bge-small-zh 模型进镜像层（防冷启动下载超时）→ COPY web/eval/db/course_kb.db → CMD python -m src.serve。`.dockerignore` 排除 .env/.git/tmp/data 各层/docs。
+- **数据库入库准备**：.gitignore 放行 `!db/course_kb.db`（事实库随仓库分发）；误提交的空库 `data/kb.sqlite`（0 字节早期残留）加入忽略，待 owner git rm --cached。
+- README 加「公网部署」节：Render 步骤、三个环境变量、闸门+限流的安全叙事、无 .env 可跑的现状。
+- 验收（本地全过）：无闸门模式 / + /api/ask 正常；DEMO_TOKEN=test123 模式下密码页 / 401 / 错误密码提示 / 正确密码 cookie 通行；连打 11 次第 11 次 429；/healthz 200。本机无 docker，镜像构建未实测（Dockerfile 已就绪）。
+
 ## 经验总结（随项目持续补充）
 
 1. **raw 不可变 + 版本归集**是数据治理的基本功：源文件的问题（乱序/缺课/事实错误）不在源头修，而是归集新版本——这让"版本管理"从演示台词变成真实操作。
