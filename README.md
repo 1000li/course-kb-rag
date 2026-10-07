@@ -144,7 +144,7 @@ course-kb-rag/
 ├── data/export/           # dataset_v*.jsonl 导出
 ├── data/logs/             # qa 调用日志
 ├── db/course_kb.db        # 单文件事实库 + 向量索引（派生物，可重建）
-├── eval/questions.jsonl   # 检索评测集（23 题）
+├── eval/questions.jsonl   # 检索评测集（31 题，含标定外信息项）
 ├── src/                   # ingest/parse/clean/chunk/annotate/export/qc/index/eval_retrieval/retrieve/qa/pipeline
 ├── scripts/               # serve_datasette.sh + datasette-metadata.yaml
 ├── docs/                  # architecture.md、cleaning-rules.md、annotation-spec.md、qc 样本、eval 报告
@@ -157,3 +157,10 @@ course-kb-rag/
 - 依赖全部固定版本（pyproject.toml）；raw 文件 sha256 在 documents 台账可校验
 - 管线无随机环节（切块确定性、检索确定性）；qc 抽检样本固定 seed=42
 - embedding 版本化：换模型会被 index_runs 校验拦下，强制重建索引
+
+## License
+
+- **代码**（`src/`、`scripts/`、`web/`、`eval/` 等）：MIT License
+- **讲义内容**（`data/raw/` 及 `data/export/`、`db/course_kb.db` 中的派生文本）：著作权归作者所有，仅限学习、演示与评估目的使用，未经授权不得商用
+
+详见 [LICENSE](LICENSE)。
