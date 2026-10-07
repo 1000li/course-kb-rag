@@ -29,7 +29,9 @@ RRF_K = 60
 
 
 def tokenize(text: str) -> list[str]:
-    return [t for t in jieba.lcut(text) if t.strip() and not t.isspace()]
+    # 拉丁字母小写归一化（与 index.normalize_text 对齐）：保证 BM25 语料与查询
+    # 两侧词元大小写一致，避免 "AI" 与 "ai" 被视为不同词。
+    return [t for t in jieba.lcut(text.lower()) if t.strip() and not t.isspace()]
 
 
 class Retriever:

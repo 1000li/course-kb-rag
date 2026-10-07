@@ -20,4 +20,9 @@
 {"qid": "q20", "question": "如何训练一个 YOLO 目标检测模型？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：讲义只讲 OpenCV 入门，无 YOLO"}
 {"qid": "q21", "question": "2025 年诺贝尔物理学奖的得主是谁？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：时事，讲义不可能包含"}
 {"qid": "q22", "question": "红烧肉怎么做才好吃？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "无关问题：与 AI 课程完全无关"}
-{"qid": "q23", "question": "讲义里关于 AI 未来发展趋势的内容在第几课？讲了什么？", "scope_doc_id": "doc_001", "expected_lesson_no": [], "should_abstain": true, "note": "版本对比题：v1.0 只有 14 课、无 L15，应拒答——作为“缺课”证据"}
+{"qid": "q23", "question": "讲义里关于 AI 未来发展趋势的内容在第几课？讲了什么？", "scope_doc_id": "doc_001", "expected_lesson_no": [], "should_abstain": true, "calibration": false, "note": "版本对比题：v1.0 只有 14 课、无 L15，应拒答——作为“缺课”证据。calibration=false（owner 2026-10-08 裁定）：归档版本 doc_001 scope，生产/演示只查 active 版本，且其双信号两维占优 q25/q27 会抬高阈值误伤可答题；移出标定集，评测报告仍展示其实际表现"}
+{"qid": "q24", "question": "AI是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [1], "should_abstain": false, "note": "tokenizer缺陷回归题：全大写AI曾被映射[UNK]导致误拒"}
+{"qid": "q25", "question": "AIGC是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [13], "should_abstain": false, "note": "tokenizer缺陷回归题：AIGC曾整体[UNK]，与AI向量cos=1.0"}
+{"qid": "q26", "question": "transformer是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [7], "should_abstain": false, "note": "拉丁缩写词义题：L7专讲Transformer与GPT"}
+{"qid": "q27", "question": "CNN是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [8], "should_abstain": false, "note": "讲义仅在L8提及CNN卷积运算原理（doc_004共2块提及CNN），非专讲"}
+{"qid": "q28", "question": "RNN是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：doc_004共0块提及RNN，应拒答"}
