@@ -33,8 +33,16 @@ def get_embedder():
     return TextEmbedding(model_name=MODEL_NAME)
 
 
+def normalize_text(text: str) -> str:
+    """拉丁字母小写归一化：bge-small-zh-v1.5 的 tokenizer 会把全大写缩写
+    (AI/AIGC/CNN/GPT...) 整体映射为 [UNK]，大小写语义完全丢失；
+    小写化后分词正常。作用于索引与查询两侧（均经 embed_texts/tokenize），
+    CJK 字符不受 lower() 影响。"""
+    return text.lower()
+
+
 def embed_texts(model, texts: list[str]) -> list[list[float]]:
-    return [v.tolist() for v in model.embed(texts)]
+    return [v.tolist() for v in model.embed([normalize_text(t) for t in texts])]
 
 
 def build_index(conn) -> dict:

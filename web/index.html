@@ -10,19 +10,19 @@
      讲义知识库 · RAG 问答 — 瑞士国际主义风格
      白底点阵 · 克莱因蓝 #002FA7 · 柠檬黄 #FFDD00 · 安全橙 #FF4D00（仅拒答）
      硬边框 · 编号标签 · 无圆角 / 无阴影 / 无渐变
-     布局：chatbot 式 — 顶部栏 / 可滚动消息区 / 底部固定输入
+     首访 onboarding：欢迎 + 示例 + 输入整体居中；提问后输入区滑到底部固定
      ============================================================ */
   :root{
-    --ikb:#002FA7;      /* International Klein Blue 国际克莱因蓝 */
+    --ikb:#002FA7;
     --ikb-2:#001f70;
-    --lemon:#FFDD00;    /* Lemon Yellow 柠檬黄（高亮）*/
-    --orange:#FF4D00;   /* Safety Orange 安全橙（仅拒答状态）*/
+    --lemon:#FFDD00;
+    --orange:#FF4D00;
     --ink:#101010;
     --paper:#ffffff;
     --dot:#e6e6e6;
     --hair:#d9d9d9;
     --muted:#6a6a6a;
-    --composer-w:800px;  /* 桌面端消息/输入列最大宽度（主流 chatbot 阅读宽度）*/
+    --composer-w:800px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
@@ -37,7 +37,6 @@
   button{font-family:inherit;cursor:pointer;}
   ::selection{background:var(--lemon);color:var(--ink);}
 
-  /* 应用骨架：flex 纵向撑满视口，中间消息区滚动、上下固定 */
   .app{display:flex;flex-direction:column;height:100dvh;max-width:100%;}
 
   /* ---------- 顶部栏 ---------- */
@@ -97,6 +96,16 @@
   }
   .info-card .ic-close:hover{background:var(--ikb);color:#fff;}
 
+  /* ---------- 首访 onboarding：整组（欢迎+示例+输入）垂直居中 ---------- */
+  .onboard{
+    flex:1 1 auto;display:flex;overflow-y:auto;
+  }
+  .onboard-inner{
+    margin:auto;width:100%;max-width:var(--composer-w);
+    padding:28px 20px 34px;
+  }
+  .welcome{max-width:600px;margin:0 auto;text-align:center;}
+
   /* ---------- 消息区：滚动容器 ---------- */
   .chat{
     flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;
@@ -104,9 +113,9 @@
     padding:18px 20px 10px;
     display:flex;flex-direction:column;gap:16px;
   }
+  .chat[hidden]{display:none;}
   .msg{width:100%;}
 
-  /* 用户消息：右侧克莱因蓝实色块 */
   .msg-q{display:flex;justify-content:flex-end;}
   .bubble-q{
     max-width:78%;text-align:left;
@@ -118,7 +127,6 @@
     color:#cfe0ff;margin-top:5px;font-weight:700;
   }
 
-  /* 助手消息：白底硬边框块 */
   .msg-a{border:2px solid var(--ink);background:var(--paper);}
   .msg-a .msg-head{
     display:flex;align-items:center;gap:9px;
@@ -131,7 +139,6 @@
   .msg-a .vtag{margin-left:auto;color:var(--muted);font-weight:700;letter-spacing:.1em;}
   .msg-body{padding:13px 16px;white-space:pre-wrap;font-size:15px;word-break:break-word;}
 
-  /* 拒答态：整块安全橙边框 + 醒目提示 */
   .msg-a.abstain{border-color:var(--orange);}
   .msg-a.abstain .msg-head{border-bottom-color:var(--orange);}
   .abstain-banner{border:2px solid var(--orange);margin:13px 14px 0;padding:11px 13px;}
@@ -139,7 +146,6 @@
   .abstain-note{font-size:12px;color:#555;margin-top:5px;letter-spacing:.03em;}
   .abstain-answer{margin:12px 14px;font-size:15px;}
 
-  /* 出处：柠檬黄标签，小屏可换行堆叠 */
   .cites{margin:0 14px 12px;}
   .cites-label{
     font-size:10px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;
@@ -152,14 +158,12 @@
   }
   .cite .page{color:#444;font-weight:700;}
 
-  /* 检索信号 / 耗时：等宽小字 */
   .meta{
     font-family:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
     font-size:10.5px;letter-spacing:.04em;color:var(--muted);
     padding:7px 14px;border-top:1px solid var(--hair);
   }
 
-  /* 加载态：分步「检索 → 生成」 */
   .msg-a.loading .msg-head{border-bottom-color:var(--ikb);}
   .steps{padding:13px 16px;display:flex;flex-direction:column;gap:9px;}
   .step{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;}
@@ -172,13 +176,17 @@
   .step.done .snum{color:#333;}
   @keyframes blink{0%,100%{opacity:.15;}50%{opacity:1;}}
 
-  /* ---------- 空状态：居中欢迎区 ---------- */
-  .welcome{display:flex;min-height:100%;padding:10px 4px;}
-  .welcome-inner{margin:auto;max-width:560px;text-align:center;}
+  /* ---------- 示例卡片 ---------- */
   .welcome h2{font-size:22px;font-weight:900;letter-spacing:.04em;color:var(--ikb);}
   .welcome .sub{font-size:12.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em;}
-  .example-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:26px;text-align:left;}
-  .egroup{border:2px solid var(--ink);background:var(--paper);padding:13px 14px;}
+  .example-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+    margin-top:26px;text-align:left;align-items:stretch;
+  }
+  .egroup{
+    border:2px solid var(--ink);background:var(--paper);
+    padding:13px 14px;display:flex;flex-direction:column;
+  }
   .egroup h3{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:9px;}
   .egroup.g-hit h3{color:var(--ikb);}
   .egroup.g-abstain h3{color:var(--orange);}
@@ -192,24 +200,39 @@
   .ecard:hover{background:var(--lemon);}
   .ecard .note{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:3px;letter-spacing:.03em;}
 
-  /* 输入区上方的可展开「示例」面板（问过问题后） */
-  .exwrap{
-    flex:none;width:100%;max-width:var(--composer-w);margin:0 auto;padding:0 20px;
+  /* 「更多示例 ▾」低调入口 + 展开的版本对比卡 */
+  .more-toggle{
+    display:block;margin:14px auto 0;
+    border:1.5px solid var(--ink);background:var(--paper);
+    color:var(--ikb);font-size:11.5px;font-weight:800;letter-spacing:.14em;
+    padding:6px 13px;text-transform:uppercase;
   }
+  .more-toggle:hover{background:var(--lemon);}
+  .more-toggle.open{background:var(--ikb);color:#fff;}
+  .more-panel{display:none;margin-top:12px;text-align:left;}
+  .more-panel.open{display:block;}
+  .welcome .more-panel .egroup{max-width:340px;margin:0 auto;}
+  .expanel .more-panel .egroup{max-width:340px;}
+
+  /* 输入区上方的「示例」面板（问过问题后） */
+  .app.onboarding .exwrap{display:none;}
+  .exwrap{flex:none;width:100%;max-width:var(--composer-w);margin:0 auto;}
   .expanel{
     display:none;border:2px solid var(--ink);background:var(--paper);
-    margin-bottom:9px;padding:13px 14px;
+    margin:0 20px 9px;padding:13px 14px;max-height:60vh;overflow-y:auto;
   }
   .expanel.open{display:block;}
-  .expanel .egroup{border:none;padding:0 0 4px;}
-  .expanel .egroup+.egroup{margin-top:12px;border-top:1px solid var(--hair);padding-top:12px;}
+  .expanel .example-grid{grid-template-columns:1fr 1fr;margin-top:0;gap:10px;}
+  .expanel .egroup{padding:10px 11px;}
   .expanel .ecard{font-size:12px;padding:7px 9px;}
+  .expanel .more-toggle{margin-left:0;}
 
   /* ---------- 底部固定输入区 ---------- */
   .composer{
     flex:none;width:100%;max-width:var(--composer-w);margin:0 auto;
     padding:0 20px 14px;
   }
+  .app.onboarding .composer{padding:0;}  /* onboarding 内：宽度/内边距与底部一致 */
   .composer-row{display:flex;align-items:flex-end;gap:0;border:2px solid var(--ink);background:var(--paper);}
   .q-input{
     flex:1 1 auto;border:none;background:transparent;resize:none;overflow-y:auto;
@@ -236,6 +259,7 @@
   }
   .composer-note .ex-toggle:hover{background:var(--ikb);color:#fff;}
   .composer-note .ex-toggle.dim{opacity:.45;}
+  .app.onboarding .ex-toggle{display:none;}  /* 首访时示例已在欢迎区，不显示该按钮 */
 
   /* ---------- 移动端（<560px）：移动优先缩放 ---------- */
   @media (max-width:560px){
@@ -246,25 +270,31 @@
     .seg-btn{padding:7px 12px;font-size:11.5px;}
     .info-btn{padding:7px 9px;font-size:11px;}
     .info-card{padding:12px 13px;font-size:12.5px;}
+    .onboard-inner{padding:18px 12px 24px;}
     .chat{padding:14px 12px 8px;gap:13px;}
     .bubble-q{max-width:92%;font-size:14px;padding:9px 12px;}
     .msg-body{padding:11px 12px;font-size:14px;}
     .msg-a .msg-head{padding:5px 10px;font-size:10px;}
     .cite{font-size:11px;padding:4px 8px;}
     .meta{font-size:10px;padding:6px 12px;}
-    .welcome h2{font-size:18px;}
-    .welcome .sub{font-size:11.5px;}
-    .example-grid{grid-template-columns:1fr;gap:10px;margin-top:18px;}
-    .ecard{font-size:12px;padding:7px 9px;}
-    .exwrap{padding:0 12px;}
+    .welcome h2{font-size:17px;}
+    .welcome .sub{font-size:11px;}
+    .example-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;}
+    .egroup{padding:9px;}
+    .egroup h3{font-size:9.5px;letter-spacing:.1em;margin-bottom:6px;}
+    .ecard{font-size:11px;padding:6px 7px;}
+    .more-toggle{font-size:10.5px;margin-top:10px;padding:5px 11px;}
+    .expanel{margin:0 12px 9px;padding:11px 12px;}
+    .expanel .example-grid{grid-template-columns:1fr;}
     .composer{padding:0 12px 10px;}
+    .app.onboarding .composer{padding:0;}
     .q-input{min-height:44px;max-height:120px;padding:11px 12px 9px;font-size:15px;}
     .send-btn{padding:12px 16px;font-size:12px;letter-spacing:.12em;}
   }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app onboarding" id="app">
 
   <!-- 顶部栏：品牌 + 版本切换 + 版本差异入口 -->
   <header class="topbar">
@@ -292,30 +322,41 @@
     <div class="note">用途：切换上方版本，对同一问题各问一次，对比两版回答差异，体会「内容版本管理」。</div>
   </aside>
 
-  <!-- 消息区：滚动容器（含空状态欢迎区） -->
-  <main class="chat" id="chat"></main>
+  <!-- 首访 onboarding：欢迎语 + 示例卡 + 输入区（整组居中） -->
+  <div class="onboard" id="onboard">
+    <div class="onboard-inner">
+      <div class="welcome" id="welcome">
+        <h2>可以问我关于这本讲义的任何问题</h2>
+        <div class="sub">命中讲义的回答会附出处标签与检索信号（可溯源）；超纲问题将被拒答，不调用 LLM。</div>
+        <!-- 示例卡 + 「更多示例」由 JS 注入 -->
+      </div>
+      <div class="composer" id="composer">
+        <div class="composer-row">
+          <textarea id="q" class="q-input" rows="1"
+                    placeholder="输入问题，Enter 发送 · Shift+Enter 换行"></textarea>
+          <button id="ask" class="send-btn" disabled>发送</button>
+        </div>
+        <div class="composer-note">
+          Enter 发送 · Shift+Enter 换行
+          <button class="ex-toggle" id="exToggle" type="button">示例</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 消息区：滚动容器 -->
+  <main class="chat" id="chat" hidden></main>
 
   <!-- 输入区上方的可展开示例面板 -->
-  <div class="exwrap">
+  <div class="exwrap" id="exwrap">
     <div class="expanel" id="expanel"></div>
   </div>
 
-  <!-- 底部固定输入区 -->
-  <div class="composer">
-    <div class="composer-row">
-      <textarea id="q" class="q-input" rows="1"
-                placeholder="输入问题，Enter 发送 · Shift+Enter 换行"></textarea>
-      <button id="ask" class="send-btn" disabled>发送</button>
-    </div>
-    <div class="composer-note">
-      Enter 发送 · Shift+Enter 换行
-      <button class="ex-toggle" id="exToggle" type="button">示例</button>
-    </div>
-  </div>
 </div>
 
 <script>
 (() => {
+  const app = document.getElementById('app');
   const chat = document.getElementById('chat');
   const seg = document.getElementById('seg');
   const input = document.getElementById('q');
@@ -323,6 +364,9 @@
   const infoBtn = document.getElementById('infoBtn');
   const infoClose = document.getElementById('infoClose');
   const infoCard = document.getElementById('infoCard');
+  const onboard = document.getElementById('onboard');
+  const welcome = document.getElementById('welcome');
+  const composer = document.getElementById('composer');
   const expanel = document.getElementById('expanel');
   const exToggle = document.getElementById('exToggle');
 
@@ -344,36 +388,60 @@
     ]},
   ];
 
-  function buildCards(container) {
-    EXAMPLES.forEach(g => {
-      const eg = document.createElement('div');
-      eg.className = 'egroup ' + g.cls;
-      const h3 = document.createElement('h3');
-      h3.textContent = g.group;
-      eg.appendChild(h3);
-      g.items.forEach(q => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'ecard';
-        b.dataset.q = q;
-        b.textContent = q;
-        if (g.note) {
-          const n = document.createElement('span');
-          n.className = 'note';
-          n.textContent = g.note;
-          b.appendChild(n);
-        }
-        eg.appendChild(b);
-      });
-      container.appendChild(eg);
+  function egroup(g) {
+    const eg = document.createElement('div');
+    eg.className = 'egroup ' + g.cls;
+    const h3 = document.createElement('h3');
+    h3.textContent = g.group;
+    eg.appendChild(h3);
+    g.items.forEach(q => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ecard';
+      b.dataset.q = q;
+      b.textContent = q;
+      if (g.note) {
+        const n = document.createElement('span');
+        n.className = 'note';
+        n.textContent = g.note;
+        b.appendChild(n);
+      }
+      eg.appendChild(b);
     });
+    return eg;
+  }
+
+  /* 示例结构：两张等高卡片（可问 / 拒答）+ 「更多示例」展开版本对比 */
+  function buildCards(parent) {
+    const grid = document.createElement('div');
+    grid.className = 'example-grid';
+    EXAMPLES.filter(g => g.group !== '版本对比试试').forEach(g => grid.appendChild(egroup(g)));
+    parent.appendChild(grid);
+
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'more-toggle';
+    more.dataset.label = '更多示例 ▾';
+    more.dataset.openLabel = '收起示例 ▴';
+    more.textContent = more.dataset.label;
+    parent.appendChild(more);
+
+    const panel = document.createElement('div');
+    panel.className = 'more-panel';
+    panel.appendChild(egroup(EXAMPLES.find(g => g.group === '版本对比试试')));
+    parent.appendChild(panel);
+  }
+
+  function buildExpanel() {
+    expanel.innerHTML = '';
+    buildCards(expanel);
+    expanel.classList.remove('open');
+    state.exOpen = false;
+    exToggle.classList.remove('dim');
+    exToggle.textContent = '示例';
   }
 
   /* ================= 工具 ================= */
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, c => (
-      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
   function scrollBottom() {
     requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
   }
@@ -390,8 +458,7 @@
     return h;
   }
   function tagSpan(label, cls) {
-    const t = el('span', 'tag ' + cls, label);
-    return t;
+    return el('span', 'tag ' + cls, label);
   }
 
   /* ================= 消息渲染 ================= */
@@ -407,7 +474,6 @@
 
   function pushA(d, version) {
     const m = el('div', 'msg msg-a' + (d.abstained ? ' abstain' : ''));
-
     const label = d.abstained ? 'A · 拒答' : 'A · 回答';
     const tagCls = d.abstained ? 'badge-o' : 'badge-a';
     m.appendChild(head(tagSpan(label, tagCls), version));
@@ -447,16 +513,13 @@
       ' · maxBM25 ' + (r.max_bm25 ?? '-') +
       ' · ' + (d.latency_ms ?? '-') + ' ms' +
       ' · scope ' + version));
-
     chat.appendChild(m);
     scrollBottom();
   }
 
-  /* 加载态：分步「检索 → 生成」，模拟真实链路节奏 */
   function pushLoading() {
     const m = el('div', 'msg msg-a loading');
     m.appendChild(head(tagSpan('A · 处理中', 'badge-a'), state.version));
-
     const wrap = el('div', 'steps');
     const mkStep = (num, text) => {
       const s = el('div', 'step');
@@ -475,12 +538,10 @@
     chat.appendChild(m);
     scrollBottom();
 
-    /* 客户端节拍：约 1.2s 后进入「生成」阶段 */
     const to1 = setTimeout(() => {
       s1.classList.remove('active'); s1.classList.add('done');
       s2.classList.add('active');
     }, 1200);
-
     return { node: m, timers: [to1] };
   }
 
@@ -492,34 +553,27 @@
     scrollBottom();
   }
 
-  function renderWelcome() {
-    const w = el('div', 'welcome');
-    const inner = el('div', 'welcome-inner');
-    inner.appendChild(el('h2', null, '可以问我关于这本讲义的任何问题'));
-    inner.appendChild(el('div', 'sub',
-      '命中讲义的回答会附出处标签与检索信号（可溯源）；超纲问题将被拒答，不调用 LLM。'));
-    const grid = el('div', 'example-grid');
-    buildCards(grid);
-    inner.appendChild(grid);
-    w.appendChild(inner);
-    chat.appendChild(w);
-  }
-
-  /* ================= 示例面板（问过问题后可展开） ================= */
-  function buildExpanel() {
-    expanel.innerHTML = '';
-    buildCards(expanel);
-    expanel.classList.remove('open');
-    state.exOpen = false;
-    exToggle.classList.remove('dim');
-    exToggle.textContent = '示例';
-  }
-  function toggleEx() {
-    state.exOpen = !state.exOpen;
-    expanel.classList.toggle('open', state.exOpen);
-    exToggle.classList.toggle('dim', state.exOpen);
-    exToggle.textContent = state.exOpen ? '收起示例' : '示例';
-    scrollBottom();
+  /* ================= 首访 → chatbot 布局切换（输入区居中→底部，FLIP 过渡） ================= */
+  function enterChatLayout() {
+    const r0 = composer.getBoundingClientRect();
+    app.classList.remove('onboarding');
+    app.append(exwrap, composer);   // 输入区移入底部固定位
+    onboard.remove();               // 移除居中 onboarding（含欢迎/示例卡）
+    chat.hidden = false;            // 显示消息区
+    const r1 = composer.getBoundingClientRect();
+    const dx = r0.left - r1.left, dy = r0.top - r1.top;
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      composer.style.transition = 'none';
+      composer.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      requestAnimationFrame(() => {
+        composer.style.transition = 'transform .38s ease';
+        composer.style.transform = 'translate(0,0)';
+      });
+      setTimeout(() => {
+        composer.style.transition = '';
+        composer.style.transform = '';
+      }, 430);
+    }
   }
 
   /* ================= 提问主流程 ================= */
@@ -531,11 +585,10 @@
 
     if (!state.asked) {
       state.asked = true;
-      const w = chat.querySelector('.welcome');
-      if (w) w.remove();      // 收起空状态欢迎区，改为可展开示例面板
-      buildExpanel();
+      enterChatLayout();   // 首次提问：输入区移到底部，进入 chatbot 布局
+      buildExpanel();      // 准备「示例」面板（首访后经「示例」按钮展开）
     }
-    if (state.exOpen) toggleEx();  // 发问时收起示例面板
+    if (state.exOpen) toggleEx();
     input.value = '';
     autosize();
 
@@ -585,18 +638,37 @@
   infoBtn.addEventListener('click', openInfo);
   infoClose.addEventListener('click', openInfo);
 
-  /* 卡片点击：填入并发送（事件委托，欢迎区 + 示例面板共用） */
+  /* 事件委托：示例卡（填入并发送）、「更多示例」开合 */
   document.addEventListener('click', (e) => {
+    const t = e.target.closest('.more-toggle');
+    if (t) {
+      const panel = t.nextElementSibling;
+      const open = panel.classList.toggle('open');
+      t.classList.toggle('open', open);
+      t.textContent = open ? t.dataset.openLabel : t.dataset.label;
+      scrollBottom();
+      return;
+    }
     const card = e.target.closest('.ecard');
-    if (!card) return;
-    input.value = card.dataset.q;
-    ask(card.dataset.q);
+    if (card) {
+      input.value = card.dataset.q;
+      ask(card.dataset.q);
+      return;
+    }
   });
 
   exToggle.addEventListener('click', () => {
-    if (!state.asked) return;  // 空状态下示例已在欢迎区
+    if (!state.asked) return;  // 首访时示例已在欢迎区
     toggleEx();
   });
+
+  function toggleEx() {
+    state.exOpen = !state.exOpen;
+    expanel.classList.toggle('open', state.exOpen);
+    exToggle.classList.toggle('dim', state.exOpen);
+    exToggle.textContent = state.exOpen ? '收起示例' : '示例';
+    scrollBottom();
+  }
 
   function autosize() {
     input.style.height = 'auto';
@@ -614,7 +686,7 @@
   });
 
   /* ================= 初始化 ================= */
-  renderWelcome();
+  buildCards(welcome);   // 首访欢迎区示例（两张等高卡 + 「更多示例」）
   input.focus();
 })();
 </script>

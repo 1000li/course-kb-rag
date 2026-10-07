@@ -76,14 +76,15 @@ def calibrate(ans: list[dict], abs_: list[dict]) -> tuple[dict | None, str]:
         f"完全重叠（q22「红烧肉」RRF 0.0328 为全场最高之一），任何 RRF 阈值都无法满足"
         f"「应拒答全拒且误拒≤10%」。\n\n"
         f"**改用双信号与门**：top-5 内最大向量相似度 < tv 且最大 BM25 < tb → 拒答。\n\n"
-        f"- 应拒答 maxVec ∈ [{min(signals(x)[0] for x in abs_):.3f}, {amv:.3f}]（最高为 "
-        f"q20 YOLO=0.150，与 OpenCV 课语义相近）；可答题最低 q04=0.038 虽低于 q20，"
-        f"但其 BM25 弱信号侧由 tb 门兜底区分。\n"
-        f"- tv = max(应拒答 maxVec)={amv:.4f} 与其上方最低可答题 maxVec={above:.4f} "
-        f"的中点 = **{tv:.4f}**\n"
+        f"- 应拒答 maxVec ∈ [{min(signals(x)[0] for x in abs_):.3f}, {amv:.3f}]；"
+        f"向量侧低于 tv 的可答题由 BM25 侧（tb 门）兜底区分。\n"
+        f"- tv = max(应拒答 maxVec)={amv:.6f} 与其上方最低可答题 maxVec={above:.6f} "
+        f"的中点 = **{tv:.6f}**\n"
         f"- tb = max(应拒答 maxBM25)={amb:.2f} 与被保留可答题最低 maxBM25 的中点 = "
-        f"**{tb:.2f}**（允许误拒 ≤{allowed} 道，实际误拒 {false_n} 道）")
-    return {"vec_max_top5": round(tv, 4), "bm25_max_top5": round(tb, 2)}, note
+        f"**{tb:.4f}**（允许误拒 ≤{allowed} 道，实际误拒 {false_n} 道）")
+    # 阈值须存全精度：中点取整可能回落到 max(应拒答) 之下，使边界应拒答题漏拒
+    # （2026-10 实测：tv 中点 0.17414 被 round(.,4) 截为 0.1741，q23 maxVec=0.17413 漏拒）
+    return {"vec_max_top5": tv, "bm25_max_top5": tb}, note
 
 
 def main() -> int:
@@ -107,6 +108,7 @@ def main() -> int:
             "qid": q["qid"], "question": q["question"],
             "scope_doc_id": res["scope_doc_id"],
             "should_abstain": q["should_abstain"],
+            "calibration": q.get("calibration", True),
             "expected": q["expected_lesson_no"], "note": q["note"],
             "hit_rank": hit_rank, "top1_rrf": res["top1_rrf"],
             "max_vec5": mv, "max_bm5": mb, "top5": top5,
@@ -114,15 +116,23 @@ def main() -> int:
 
     ans = [x for x in results if not x["should_abstain"]]
     abs_ = [x for x in results if x["should_abstain"]]
+    # calibration=false 的题（owner 2026-10-08 裁定，如 q23：归档版本 scope 陷阱题）
+    # 不参与阈值标定与拒答类指标，仍在逐题明细中展示实际表现作为信息项
+    ans_cal = [x for x in ans if x.get("calibration", True)]
+    abs_cal = [x for x in abs_ if x.get("calibration", True)]
     recall = sum(1 for x in ans if x["hit_rank"]) / len(ans)
     mrr = sum(1.0 / x["hit_rank"] for x in ans if x["hit_rank"]) / len(ans)
 
-    rule, calib_note = calibrate(ans, abs_)
+    rule, calib_note = calibrate(ans_cal, abs_cal)
+    excluded = [x["qid"] for x in results if not x.get("calibration", True)]
+    if excluded:
+        calib_note += (f"\n\n**标定集排除**：{excluded}（calibration=false，不参与 "
+                       f"tv/tb 标定与拒答率/误拒率统计，逐题明细仍展示其实际表现）")
     for x in results:
         x["abstained"] = (rule is not None and x["max_vec5"] < rule["vec_max_top5"]
                           and x["max_bm5"] < rule["bm25_max_top5"])
-    abstain_rate = (sum(1 for x in abs_ if x["abstained"]) / len(abs_)) if rule else 0
-    false_rate = (sum(1 for x in ans if x["abstained"]) / len(ans)) if rule else 0
+    abstain_rate = (sum(1 for x in abs_cal if x["abstained"]) / len(abs_cal)) if rule else 0
+    false_rate = (sum(1 for x in ans_cal if x["abstained"]) / len(ans_cal)) if rule else 0
 
     run_id = f"eval_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4().hex[:8]}"
     now = utcnow()
@@ -175,6 +185,9 @@ def write_report(run_id, results, recall, mrr, abstain_rate, false_rate,
                  rule, calib_note):
     ans = [x for x in results if not x["should_abstain"]]
     abs_ = [x for x in results if x["should_abstain"]]
+    ans_cal = [x for x in ans if x.get("calibration", True)]
+    abs_cal = [x for x in abs_ if x.get("calibration", True)]
+    excl = {x["qid"] for x in results if not x.get("calibration", True)}
     lines = [
         "# M5 检索质量评估报告",
         "",
@@ -187,9 +200,9 @@ def write_report(run_id, results, recall, mrr, abstain_rate, false_rate,
         "|---|---|---|",
         f"| 可答题 recall@5（课级） | {recall:.1%}（{sum(1 for x in ans if x['hit_rank'])}/{len(ans)}） | ≥85% |",
         f"| 可答题 MRR | {mrr:.3f} | — |",
-        f"| 应拒答题拒答率 | {abstain_rate:.0%}（{sum(1 for x in abs_ if x['abstained'])}/{len(abs_)}） | 100% |",
-        f"| 可答题误拒率 | {false_rate:.1%} | ≤10% |",
-        f"| 拒答规则 | top5 maxVec < {rule['vec_max_top5']} 且 maxBM25 < {rule['bm25_max_top5']} → 拒答 | — |" if rule else "| 拒答规则 | 标定失败 | — |",
+        f"| 应拒答题拒答率（标定集） | {abstain_rate:.0%}（{sum(1 for x in abs_cal if x['abstained'])}/{len(abs_cal)}） | 100% |",
+        f"| 可答题误拒率（标定集） | {false_rate:.1%}（{sum(1 for x in ans_cal if x['abstained'])}/{len(ans_cal)}） | ≤10% |",
+        f"| 拒答规则 | top5 maxVec < {rule['vec_max_top5']:.6f} 且 maxBM25 < {rule['bm25_max_top5']:.4f} → 拒答 | — |" if rule else "| 拒答规则 | 标定失败 | — |",
         "",
         "## 阈值标定",
         "",
@@ -199,6 +212,7 @@ def write_report(run_id, results, recall, mrr, abstain_rate, false_rate,
         "",
         "应拒答题：" +
         "；".join(f"{x['qid']}({x['max_vec5']:.3f}/{x['max_bm5']:.1f}/{x['top1_rrf']:.4f})"
+                 + ("（标定外）" if x["qid"] in excl else "")
                  for x in abs_),
         "",
         "可答题（按 maxVec 升序）：" +
