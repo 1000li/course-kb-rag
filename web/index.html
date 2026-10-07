@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>讲义知识库 · RAG 问答</title>
+<style>
+  :root{
+    --ikb:#002FA7;      /* International Klein Blue 国际克莱因蓝 */
+    --ikb-2:#001f70;
+    --lemon:#FFDD00;    /* Lemon Yellow 柠檬黄（高亮：出处标签 / 关键词下划块）*/
+    --orange:#FF4D00;   /* Safety Orange 安全橙（仅拒答状态）*/
+    --ink:#101010;
+    --paper:#ffffff;
+    --dot:#e4e4e4;
+    --hair:#cfcfcf;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background-color:var(--paper);
+    background-image:radial-gradient(var(--dot) 1px, transparent 1.3px);
+    background-size:24px 24px;
+    color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.6;
+  }
+  body::before{  /* 顶部克莱因蓝细线——瑞士风硬边签名 */
+    content:"";position:fixed;top:0;left:0;right:0;height:6px;background:var(--ikb);z-index:9;
+  }
+  ::selection{background:var(--lemon);color:var(--ink);}
+
+  .frame{
+    max-width:780px;margin:0 auto;min-height:100vh;
+    padding:0 24px 44px;
+    border-left:1px solid var(--ink);border-right:1px solid var(--ink);
+    background:rgba(255,255,255,.9);
+  }
+
+  /* ---- 顶栏：项目名 + 版本切换 ---- */
+  .topbar{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+    padding:38px 0 20px;
+    border-bottom:3px solid var(--ink);
+  }
+  .overline{
+    font-size:10px;font-weight:800;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--ikb);margin-bottom:8px;
+  }
+  h1{
+    font-size:31px;font-weight:900;line-height:1.12;letter-spacing:.01em;color:var(--ikb);
+  }
+  h1 .hl{color:var(--ink);background:var(--lemon);padding:0 6px;}
+  .seg{display:flex;flex:none;border:2px solid var(--ink);background:var(--paper);}
+  .seg-btn{
+    background:var(--paper);border:none;color:var(--ink);
+    font-family:inherit;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:9px 20px;cursor:pointer;
+  }
+  .seg-btn+.seg-btn{border-left:2px solid var(--ink);}
+  .seg-btn.active{background:var(--ikb);color:#fff;}
+  .seg-btn:not(.active):hover{background:var(--lemon);}
+
+  /* ---- 分区 ---- */
+  .sec{padding:26px 0;border-bottom:1px solid var(--hair);}
+  .sec-label{
+    display:flex;align-items:baseline;gap:10px;
+    font-size:11px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .sec-label .num{color:var(--ikb);}
+
+  /* ---- 提问输入 ---- */
+  .q-row{display:grid;grid-template-columns:1fr auto;border:2px solid var(--ink);background:var(--paper);}
+  .q-input{
+    border:none;background:transparent;min-width:0;
+    padding:14px 16px;font-family:inherit;font-size:16px;color:var(--ink);
+  }
+  .q-input::placeholder{color:#9a9a9a;}
+  .q-input:focus{outline:none;box-shadow:inset 3px 0 0 0 var(--ikb);}
+  .ask-btn{
+    border:none;background:var(--ikb);color:#fff;font-family:inherit;
+    font-size:14px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;
+    padding:0 30px;cursor:pointer;
+  }
+  .ask-btn:hover{background:var(--ikb-2);}
+  .ask-btn:disabled{background:#8fa3d9;cursor:not-allowed;}
+
+  .presets{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .preset{
+    border:1.5px solid var(--ink);background:var(--paper);
+    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink);
+    padding:7px 12px;cursor:pointer;
+  }
+  .preset sup{color:var(--ikb);font-size:10px;font-weight:800;margin-left:5px;}
+  .preset:hover{background:var(--lemon);}
+
+  /* ---- 对话区 ---- */
+  .chat{display:flex;flex-direction:column;gap:18px;}
+  .chat .empty{
+    border:2px dashed var(--hair);padding:22px 18px;
+    font-size:13px;color:#777;letter-spacing:.04em;
+  }
+  .msg{border:2px solid var(--ink);background:var(--paper);}
+  .msg-head{
+    display:flex;align-items:center;gap:10px;
+    padding:7px 12px;border-bottom:2px solid var(--ink);
+    font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  }
+  .msg-head .tag{padding:2px 8px;}
+  .badge-q{background:var(--ikb);color:#fff;}
+  .badge-a{background:var(--lemon);color:var(--ink);}
+  .badge-o{background:var(--orange);color:#fff;}
+  .badge-load{background:var(--ink);color:#fff;}
+  .badge-err{background:var(--ink);color:#fff;}
+  .msg-head .vtag{margin-left:auto;color:#666;font-weight:700;letter-spacing:.1em;}
+  .msg-body{padding:14px 16px;white-space:pre-wrap;font-size:15px;word-break:break-word;}
+
+  /* 拒答态：安全橙整块边框 + 醒目提示 */
+  .msg.abstain{border-color:var(--orange);}
+  .msg.abstain .msg-head{border-bottom-color:var(--orange);}
+  .abstain-banner{border:2px solid var(--orange);margin:14px 16px;padding:12px 14px;}
+  .abstain-title{color:var(--orange);font-size:18px;font-weight:900;letter-spacing:.08em;}
+  .abstain-note{font-size:12px;color:#555;margin-top:6px;letter-spacing:.03em;}
+  .abstain-answer{margin:0 16px 14px;font-size:15px;}
+
+  /* 出处标签：柠檬黄底黑字 */
+  .cites{margin:0 16px 14px;}
+  .cites-label{
+    font-size:10.5px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--ikb);margin-bottom:8px;
+  }
+  .cites-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .cite{
+    background:var(--lemon);border:1.5px solid var(--ink);
+    padding:5px 10px;font-size:12.5px;font-weight:800;line-height:1.4;
+  }
+  .cite .page{color:#444;font-weight:700;}
+
+  /* 检索信号 / 耗时：等宽小字，可溯源 */
+  .meta{
+    font-family:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    font-size:11px;letter-spacing:.04em;color:#6a6a6a;
+    padding:8px 16px;border-top:1px solid var(--hair);
+  }
+
+  /* 加载动画 */
+  .load-bar{display:flex;align-items:center;gap:10px;}
+  .load-text{font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--ikb);}
+  .dots{display:inline-flex;gap:5px;}
+  .dot{width:7px;height:7px;background:var(--ikb);animation:blink 1.2s infinite;}
+  .dot:nth-child(2){animation-delay:.2s;}
+  .dot:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,100%{opacity:.15;}50%{opacity:1;}}
+
+  /* ---- 页脚 ---- */
+  .foot{padding:18px 0 6px;font-size:11px;letter-spacing:.06em;color:#666;}
+  .foot-line+.foot-line{margin-top:4px;}
+
+  @media (max-width:560px){
+    .topbar{flex-direction:column;align-items:flex-start;gap:14px;}
+    h1{font-size:24px;}
+    .q-row{grid-template-columns:1fr;}
+    .ask-btn{padding:13px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="overline">M8 · WEB DEMO — RETRIEVAL-AUGMENTED GENERATION</div>
+      <h1>讲义知识库 <span class="hl">· RAG 问答</span></h1>
+    </div>
+    <div class="seg" id="seg" role="group" aria-label="讲义版本">
+      <button class="seg-btn active" data-v="v1.2">v1.2</button>
+      <button class="seg-btn" data-v="v1.0">v1.0</button>
+    </div>
+  </header>
+
+  <section class="sec">
+    <div class="sec-label"><span class="num">01</span> / 提问</div>
+    <div class="q-row">
+      <input id="q" class="q-input" type="text" autocomplete="off"
+             placeholder="输入问题，例如：机器学习有哪几种类型？">
+      <button id="ask" class="ask-btn" disabled>提问</button>
+    </div>
+    <div class="presets">
+      <button class="preset" data-q="机器学习有哪几种类型？">① 机器学习有哪几种类型？</button>
+      <button class="preset" data-q="量子计算的基本原理是什么？">② 量子计算的基本原理是什么？</button>
+      <button class="preset" data-q="讲义中认为 AI 未来有哪些发展趋势？">③ AI 未来有哪些发展趋势？<sup>可切 v1.2/v1.0 对比</sup></button>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-label"><span class="num">02</span> / 回答</div>
+    <div id="chat" class="chat">
+      <div class="empty" id="empty">
+        输入问题或点击上方示例按钮。命中讲义的回答会附<strong>出处标签</strong>（柠檬黄底）
+        与<strong>检索信号</strong>（maxVec / maxBM25 / 耗时），结果可溯源；超出讲义范围的问题将被拒答，不调用 LLM。
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="foot-line">讲义知识库 · RAG 问答 — 混合检索（向量 + BM25 → RRF 融合）· 双信号拒答判定（不命中不调用 LLM）· 出处为物理页码</div>
+    <div class="foot-line">数据：640 块 · 版本 v1.0 / v1.2 · 单文件前端，离线可用，对话仅保留在本次会话内</div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const chat = document.getElementById('chat');
+  const seg = document.getElementById('seg');
+  const input = document.getElementById('q');
+  const askBtn = document.getElementById('ask');
+  const empty = document.getElementById('empty');
+  const state = { version: 'v1.2', busy: false };
+
+  /* 版本切换（segmented control）*/
+  seg.addEventListener('click', (e) => {
+    const b = e.target.closest('.seg-btn');
+    if (!b) return;
+    seg.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.version = b.dataset.v;
+    input.focus();
+  });
+
+  /* 示例问题按钮：填入并直接提问 */
+  document.querySelectorAll('.preset').forEach(b => {
+    b.addEventListener('click', () => {
+      input.value = b.dataset.q;
+      ask();
+    });
+  });
+
+  input.addEventListener('input', () => {
+    askBtn.disabled = state.busy || !input.value.trim();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !askBtn.disabled) ask();
+  });
+
+  /* ---- DOM 构造 ---- */
+  function head(label, tagCls, version) {
+    const h = document.createElement('div');
+    h.className = 'msg-head';
+    const t = document.createElement('span');
+    t.className = 'tag ' + tagCls;
+    t.textContent = label;
+    h.appendChild(t);
+    if (version) {
+      const v = document.createElement('span');
+      v.className = 'vtag';
+      v.textContent = version;
+      h.appendChild(v);
+    }
+    return h;
+  }
+
+  function pushQ(text, version) {
+    if (empty) empty.remove();
+    const m = document.createElement('div');
+    m.className = 'msg';
+    m.appendChild(head('Q · 提问', 'badge-q', version));
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+    body.textContent = text;
+    m.appendChild(body);
+    chat.appendChild(m);
+    scrollBottom();
+  }
+
+  function pushA(d, version) {
+    if (empty) empty.remove();
+    const m = document.createElement('div');
+    m.className = 'msg' + (d.abstained ? ' abstain' : '');
+
+    const label = d.abstained ? 'A · 拒答' : 'A · 回答';
+    const tagCls = d.abstained ? 'badge-o' : 'badge-a';
+    m.appendChild(head(label, tagCls, version));
+
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+    if (d.abstained) {
+      const banner = document.createElement('div');
+      banner.className = 'abstain-banner';
+      const t = document.createElement('div');
+      t.className = 'abstain-title';
+      t.textContent = '超出讲义范围';
+      const n = document.createElement('div');
+      n.className = 'abstain-note';
+      n.textContent = '双信号拒答判定低于阈值，未调用 LLM —— 本结论仅由检索信号强度决定（见下方 maxVec / maxBM25）。';
+      banner.appendChild(t);
+      banner.appendChild(n);
+      body.appendChild(banner);
+      const txt = document.createElement('div');
+      txt.className = 'abstain-answer';
+      txt.textContent = d.answer;
+      body.appendChild(txt);
+    } else {
+      body.textContent = d.answer;
+    }
+    m.appendChild(body);
+
+    /* 03 / 出处 */
+    if (!d.abstained && Array.isArray(d.citations) && d.citations.length) {
+      const cites = document.createElement('div');
+      cites.className = 'cites';
+      const lab = document.createElement('div');
+      lab.className = 'cites-label';
+      lab.textContent = '03 / 出处';
+      cites.appendChild(lab);
+      const list = document.createElement('div');
+      list.className = 'cites-list';
+      d.citations.forEach(c => {
+        const tag = document.createElement('span');
+        tag.className = 'cite';
+        tag.title = 'chunk: ' + c.chunk_id;
+        const t = document.createElement('span');
+        t.textContent = '第' + c.lesson_no + '课 · ' + (c.section_title || '未分节') + ' · ';
+        const p = document.createElement('span');
+        p.className = 'page';
+        p.textContent = 'P' + c.page_range;
+        tag.appendChild(t);
+        tag.appendChild(p);
+        list.appendChild(tag);
+      });
+      cites.appendChild(list);
+      m.appendChild(cites);
+    }
+
+    /* 检索信号 / 耗时 */
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const r = d.retrieval || {};
+    meta.textContent = 'maxVec ' + (r.max_vec ?? '-') +
+      ' · maxBM25 ' + (r.max_bm25 ?? '-') +
+      ' · ' + (d.latency_ms ?? '-') + ' ms' +
+      ' · scope ' + version;
+    m.appendChild(meta);
+    chat.appendChild(m);
+    scrollBottom();
+  }
+
+  function pushLoading() {
+    if (empty) empty.remove();
+    const m = document.createElement('div');
+    m.className = 'msg';
+    m.appendChild(head('… 处理中', 'badge-load'));
+    const body = document.createElement('div');
+    body.className = 'msg-body load-bar';
+    body.innerHTML =
+      '<span class="load-text">QUERYING</span>' +
+      '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>' +
+      '<span class="load-text" style="color:#6a6a6a">混合检索 → 拒答判定 → LLM</span>';
+    m.appendChild(body);
+    chat.appendChild(m);
+    scrollBottom();
+    return m;
+  }
+
+  function pushError(text) {
+    if (empty) empty.remove();
+    const m = document.createElement('div');
+    m.className = 'msg';
+    m.appendChild(head('! 错误', 'badge-err'));
+    const body = document.createElement('div');
+    body.className = 'msg-body';
+    body.textContent = text;
+    m.appendChild(body);
+    chat.appendChild(m);
+    scrollBottom();
+  }
+
+  function scrollBottom() {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  /* ---- 提问主流程 ---- */
+  function ask() {
+    const q = input.value.trim();
+    if (!q || state.busy) return;
+    state.busy = true;
+    askBtn.disabled = true;
+    const ver = state.version;
+
+    pushQ(q, ver);
+    const loading = pushLoading();
+
+    fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, doc_version: ver }),
+    })
+      .then(r => r.json().then(d => ({ ok: r.ok, d })).catch(() => ({ ok: false, d: { error: '响应不是合法 JSON' } })))
+      .then(({ ok, d }) => {
+        loading.remove();
+        if (!ok) { pushError(d.error || '请求失败'); return; }
+        pushA(d, ver);
+      })
+      .catch(err => {
+        loading.remove();
+        pushError(String(err));
+      })
+      .finally(() => {
+        state.busy = false;
+        askBtn.disabled = !input.value.trim();
+      });
+  }
+})();
+</script>
+</body>
+</html>
