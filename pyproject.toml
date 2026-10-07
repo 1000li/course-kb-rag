@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "course-kb-rag"
+version = "0.1.0"
+description = "课程讲义 → 高质量数据集 → 可溯源 RAG 问答的端到端演示管线"
+readme = "README.md"
+requires-python = ">=3.13"
+# 已验证可用的依赖固定版本（py -3 -m pip show 查证）
+dependencies = [
+    "pypdf==6.19.0",
+    "pymupdf==1.28.2",
+    "sqlite-vec==0.1.9",
+    "fastembed==0.8.1",     # M5 embedding（bge-small-zh-v1.5）
+    "jieba==0.42.1",        # M5 BM25 中文分词
+    "rank_bm25==0.2.2",     # M5 BM25 召回
+    "openai==2.14.0",       # M6 问答（DeepSeek 的 OpenAI 兼容模式）
+    # "datasette",          # M7 数据浏览呈现，版本待装时验证
+]
+
+[tool.setuptools]
+packages = ["src"]

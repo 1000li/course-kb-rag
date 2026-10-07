@@ -1,0 +1,23 @@
+{"qid": "q01", "question": "AI 的三大支柱分别是什么？它们各自起什么作用？", "scope_doc_id": "doc_004", "expected_lesson_no": [2], "should_abstain": false, "note": "L2 核心知识点：算力/算法/数据"}
+{"qid": "q02", "question": "强人工智能和弱人工智能有什么区别？", "scope_doc_id": "doc_004", "expected_lesson_no": [1], "should_abstain": false, "note": "L1 知识点"}
+{"qid": "q03", "question": "标量和向量有什么区别？请举例说明。", "scope_doc_id": "doc_004", "expected_lesson_no": [3], "should_abstain": false, "note": "L3 一、数据：AI 观察世界的眼睛"}
+{"qid": "q04", "question": "什么是线性组合？它在 AI 中有什么用？", "scope_doc_id": "doc_004", "expected_lesson_no": [3], "should_abstain": false, "note": "L3 二、向量"}
+{"qid": "q05", "question": "为什么说 Python 是 AI 开发的首选语言？", "scope_doc_id": "doc_004", "expected_lesson_no": [4], "should_abstain": false, "note": "L4 知识点"}
+{"qid": "q06", "question": "什么是监督学习和无监督学习？它们有什么区别？", "scope_doc_id": "doc_004", "expected_lesson_no": [5], "should_abstain": false, "note": "L5 机器学习的类型"}
+{"qid": "q07", "question": "机器学习和传统的逐行写代码编程有什么不同？", "scope_doc_id": "doc_004", "expected_lesson_no": [5], "should_abstain": false, "note": "L5 什么是机器学习"}
+{"qid": "q08", "question": "什么是自然语言处理（NLP）？它有哪些应用？", "scope_doc_id": "doc_004", "expected_lesson_no": [6], "should_abstain": false, "note": "L6 一、什么是自然语言处理"}
+{"qid": "q09", "question": "Transformer 的注意力机制是用来做什么的？", "scope_doc_id": "doc_004", "expected_lesson_no": [7], "should_abstain": false, "note": "L7 一、Transformer 与 GPT"}
+{"qid": "q10", "question": "GPT 是怎么学会“说人话”的？它的训练原理是什么？", "scope_doc_id": "doc_004", "expected_lesson_no": [7], "should_abstain": false, "note": "L7 二、GPT 原理揭秘"}
+{"qid": "q11", "question": "什么是提示词工程？怎样才能写出好的提示词？", "scope_doc_id": "doc_004", "expected_lesson_no": [7, 13], "should_abstain": false, "note": "L7 四、提示词工程；L13 三、实战指南也讲提示词"}
+{"qid": "q12", "question": "计算机是怎么“看见”图片的？什么是像素？", "scope_doc_id": "doc_004", "expected_lesson_no": [8], "should_abstain": false, "note": "L8 一、人工智能是怎么看东西的"}
+{"qid": "q13", "question": "手势识别技术可以应用在哪些场景？", "scope_doc_id": "doc_004", "expected_lesson_no": [9], "should_abstain": false, "note": "L9 知识点：手势识别"}
+{"qid": "q14", "question": "RGB 和 HSV 这两种颜色表示方式有什么区别？", "scope_doc_id": "doc_004", "expected_lesson_no": [11], "should_abstain": false, "note": "L11 一、机器人视觉与坐标转换"}
+{"qid": "q15", "question": "智能机械臂从识别物体到完成抓取的工作流程是怎样的？", "scope_doc_id": "doc_004", "expected_lesson_no": [12], "should_abstain": false, "note": "L12 知识点：智能机械臂的工作流程"}
+{"qid": "q16", "question": "什么是 AIGC？AI 是如何学会创作艺术作品的？", "scope_doc_id": "doc_004", "expected_lesson_no": [13], "should_abstain": false, "note": "L13 一/二：艺术数据库、AIGC 三重密码"}
+{"qid": "q17", "question": "AI 会带来哪些伦理问题？什么是算法偏见？", "scope_doc_id": "doc_004", "expected_lesson_no": [14], "should_abstain": false, "note": "L14 二、四大 AI 伦理问题解析"}
+{"qid": "q18", "question": "讲义中认为 AI 未来有哪些发展趋势？", "scope_doc_id": "doc_004", "expected_lesson_no": [15], "should_abstain": false, "note": "L15 二、AI 的未来趋势与伦理挑战；v1.1+ 才有"}
+{"qid": "q19", "question": "量子计算的基本原理是什么？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：讲义未涉及量子计算"}
+{"qid": "q20", "question": "如何训练一个 YOLO 目标检测模型？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：讲义只讲 OpenCV 入门，无 YOLO"}
+{"qid": "q21", "question": "2025 年诺贝尔物理学奖的得主是谁？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：时事，讲义不可能包含"}
+{"qid": "q22", "question": "红烧肉怎么做才好吃？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "无关问题：与 AI 课程完全无关"}
+{"qid": "q23", "question": "讲义里关于 AI 未来发展趋势的内容在第几课？讲了什么？", "scope_doc_id": "doc_001", "expected_lesson_no": [], "should_abstain": true, "note": "版本对比题：v1.0 只有 14 课、无 L15，应拒答——作为“缺课”证据"}

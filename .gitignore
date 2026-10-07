@@ -1,0 +1,6 @@
+.env
+__pycache__/
+data/interim/
+data/logs/
+db/*.db
+tmp/v12/
