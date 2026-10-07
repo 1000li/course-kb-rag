@@ -1,0 +1,255 @@
+⟦P44⟧
+第9 课：手势识别游戏开发
+
+本节课涉及到的知识点：
+1、计算机视觉中的手势识别：手势识别像教AI学“手语”。通过摄像头捕捉手部动作（如
+比心、挥手），AI能理解你的手势指令，用来控制游戏、智能家居，甚至翻译手语。
+2、手势识别原理：
+ 关键点检测：AI识别手势需要先给手画“骨骼图”——AI先找到手掌、指尖等21个关
+ 键点（如用OpenCV标出手指关节），再根据这些点的位置变化判断手势（如张开五
+ 指=‘停止’，握拳=‘确定’）。
+ 特征工程：AI分析手的形状（如手掌大小）、运动轨迹（如从左到右挥动）等特征，
+ 再用数学公式总结规律（比如‘比心’手势的指尖距离公式），最终识别出你的动作。
+3、OpenCV库实践：图像采集
+   OpenCV库能实时调用摄像头，把你的手势变成一帧帧图片，再通过“灰度化”、“边
+缘检测”等处理（类似给照片加滤镜），帮AI更清晰地‘看’手势。
+
+
+一、引入
+
+
+  这是一个通过手势控制飞机移动的简易游戏。
+
+
+
+
+
+  当我们在摄像头前移动手掌时，游戏中的飞机也同步移动。这其中的奥秘在于计算
+机视觉技术将物理手势转化为数字信号。
+
+  思考题：
+
+  回忆之前学的知识，图像中的手部信息需要经过哪些处理步骤才能被计算机理解？
+
+
+
+                                             43
+⟦P45⟧
+二、知识衔接
+
+
+1. 关键点检测
+
+
+    我们要让计算机识别手势，首先得让计算机知道手的形状和位置。这里就要用到关
+  键点检测技术。MediaPipe 手部关键点模型通过深度学习定位手掌的解剖学特征点。模
+  型的关键点分布在手的不同部位，就像给手上的重要位置做了标记一样。每个关键点包
+  含(x,y,z)三维坐标，通过这些坐标，我们就能知道手的姿态。
+
+
+
+
+
+     9. 要实现手势识别，我们需要获取实时的图像数据，这就需要调用摄像头。在Python
+    中，我们可以使用OpenCV 库来调用摄像头。下面是一个简单的示例代码：
+# MediaPipe手部检测示例
+import cv2
+import mediapipe as mp
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(max_num_hands=1)
+
+cap = cv2.VideoCapture(0)
+while cap.isOpened():
+     success, image = cap.read()
+       if not success: break
+
+     results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+       if results.multi_hand_landmarks:
+         for hand_landmarks in results.multi_hand_landmarks:
+      # 获取食指指尖坐标（8号点）
+              index_finger = hand_landmarks.landmark[8]
+                print(f"X:{index_finger.x}, Y:{index_finger.y}")
+
+动手实验：这段代码的主要功能是使用MediaPipe 库进行手部检测，并从摄像
+
+头捕获的实时视频中提取食指指尖的位置坐标（具体为手指上的第8 个关键点）。
+
+
+                                             44
+⟦P46⟧
+尝试输出不同手指关键点的坐标值，观察数值如何随手势变化。
+
+2. 手势特征工程
+
+
+  我们可以获取食指指尖关键点和拇指指尖关键点的坐标，然后计算它们之间的距离。这
+个距离就可以作为一个手势特征，当我们改变手势时，这个距离也会发生变化。大家想一想，
+除了食指和拇指的距离，还可以用哪些关键点之间的距离或角度来表示手势特征呢？
+  运行下面的代码，尝试通过关键点间距计算手势特征：
+
+def get_distance(landmarks, point1, point2):
+  # 计算两个关键点的欧氏距离
+    dx = landmarks[point1].x - landmarks[point2].x
+    dy = landmarks[point1].y - landmarks[point2].y
+    return (dx**2 + dy**2)**0.5
+
+# 判断"比心"手势示例
+thumb_tip = hand_landmarks.landmark[4]
+index_tip = hand_landmarks.landmark[8]
+if get_distance(thumb_tip, index_tip) < 0.05:
+   print("检测到比心手势！")
+
+
+思考题：
+
+如果要识别”胜利（V字）“手势，需
+要计算哪些关键点之间的关系？
+
+
+三、游戏逻辑设计（系统
+
+思维）
+
+
+  搭建飞机大战游戏的核心交互
+逻辑：
+
+      1. 手掌张开：通过手掌中心点坐
+标控制飞机位置
+
+      2. 握拳手势：触发子弹发射
+
+      3. 持续时长：握拳超过3 秒激活
+大招
+
+
+四、完整项目实践
+
+
+                                             45
+⟦P47⟧
+步骤1：环境准备
+
+
+pip install opencv-python mediapipe pygame
+
+步骤2：游戏主循环框架
+
+
+import pygame
+from pygame.locals import *
+
+# 初始化游戏窗口
+pygame.init()
+screen = pygame.display.set_mode((800,600))
+clock = pygame.time.Clock()
+
+# 飞机对象
+class Plane(pygame.sprite.Sprite):
+    def __init__(self):
+           super().__init__()
+         self.image = pygame.Surface((50,50))
+           self.image.fill((255,0,0))
+           self.rect = self.image.get_rect(center=(400,300))
+
+plane = Plane()
+
+步骤3：手势控制集成
+
+
+def update_plane_position(hand_landmarks):
+  # 取手掌中心点（0号点）控制飞机
+    palm_center = hand_landmarks.landmark[0]
+     plane.rect.x = palm_center.x * 800 # 映射到屏幕宽度
+     plane.rect.y = palm_center.y * 600 # 映射到屏幕高度
+
+# 在游戏循环中添加：
+     results = hands.process(frame)
+       if results.multi_hand_landmarks:
+         update_plane_position(results.multi_hand_landmarks[0])
+调试技巧：添加cv2.imshow()显示摄像头画面与关键点叠加，验证识别准确性
+
+步骤4：手势事件触发
+
+
+# 添加子弹发射功能
+
+
+                                             46
+⟦P48⟧
+bullets = pygame.sprite.Group()
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, start_pos):
+           super().__init__()
+         self.image = pygame.Surface((10,20))
+          self.image.fill((255,255,0))
+           self.rect = self.image.get_rect(center=start_pos)
+          self.speed = -10 # 向上运动
+
+def check_fist_gesture(landmarks):
+  """通过指尖与掌心距离判断握拳"""
+    palm_center = landmarks.landmark[0]
+     finger_tips = [4,8,12,16,20] # 所有指尖编号
+     total_distance = sum(
+         get_distance(palm_center, landmarks.landmark[i])
+         for  i in finger_tips
+       )
+    return total_distance < 1.2 # 经验阈值
+
+# 在游戏循环中添加：
+if check_fist_gesture(hand_landmarks):
+     new_bullet = Bullet(plane.rect.midtop)
+     bullets.add(new_bullet)
+
+
+步骤5：最终整合与优化
+
+
+while True: # 完整游戏循环
+  # 处理游戏事件
+     for event in pygame.event.get():
+              if event.type == QUIT:
+             pygame.quit()
+                  exit()
+
+  # 摄像头处理
+      ret, frame = cap.read()
+       if ret:
+        frame = cv2.flip(frame, 1) # 镜像翻转
+          results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+    # 更新游戏状态
+              if results.multi_hand_landmarks:
+
+
+                                             47
+⟦P49⟧
+           main_hand = results.multi_hand_landmarks[0]
+             update_plane_position(main_hand)
+                    if check_fist_gesture(main_hand):
+                   bullets.add(Bullet(plane.rect.midtop))
+
+        bullets.update()  # 需要给Bullet 类添加update()方法
+      screen.fill((0,0,0))
+     screen.blit(plane.image, plane.rect)
+     bullets.draw(screen)
+    pygame.display.update()
+     clock.tick(30)  # 控制帧率
+
+
+
+总结与拓展
+
+
+  本节课实现了从图像采集→关键点检测→特征计算→游戏交互的完整CV 应用流
+程。这种”感知-决策-执行”的闭环系统正是大多数AI 应用的核心模式。
+
+课后任务：尝试为游戏添加子弹发射功能（当食指与中指间距小于阈值时触发）
+
+
+
+
+
+                                             48
