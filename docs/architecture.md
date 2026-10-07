@@ -215,6 +215,36 @@ CREATE TABLE index_runs (
 );
 -- qa.py 启动时校验：当前配置的 model_name/dim 必须与最新 index_runs 一致，否则报错要求重建索引
 
+-- 检索评估运行（M5）
+CREATE TABLE eval_runs (
+  run_id        TEXT PRIMARY KEY,
+  pipeline_version TEXT NOT NULL,
+  model_name    TEXT NOT NULL,       -- 与 index_runs.model_name 对应
+  ran_at        TEXT NOT NULL,
+  question_count INTEGER NOT NULL,
+  recall_at_5   REAL,                -- 可答题课级 recall@5
+  mrr           REAL,                -- 可答题 MRR（课级首个命中名次）
+  abstain_rate  REAL,                -- 应拒答题中实际拒答比例
+  false_abstain_rate REAL,           -- 可答题误拒率
+  threshold     TEXT,                -- 标定的拒答规则 JSON：{"vec_max_top5": tv, "bm25_max_top5": tb}
+                                     -- 拒答 = top-5 内最大向量相似度 < tv 且最大 BM25 < tb（§4.4）
+  notes         TEXT
+);
+
+-- 检索评估逐题明细
+CREATE TABLE eval_results (
+  run_id        TEXT NOT NULL REFERENCES eval_runs(run_id),
+  qid           TEXT NOT NULL,
+  scope_doc_id  TEXT NOT NULL,
+  should_abstain INTEGER NOT NULL,   -- 0/1
+  hit_at_5      INTEGER,             -- 可答题：top-5 是否命中期望课；应拒答题 NULL
+  first_hit_rank INTEGER,            -- 首个命中名次（MRR 用），未命中 NULL
+  top1_score    REAL,                -- 融合 top-1 的 RRF 分数
+  abstained     INTEGER NOT NULL,    -- 标定规则下是否拒答
+  top_chunks    TEXT,                -- JSON：top-5 [{chunk_id, lesson_no, rrf, vec, bm25}]
+  PRIMARY KEY (run_id, qid)
+);
+
 -- 向量索引（sqlite-vec 虚拟表，每次全量重建，可删可重建）
 -- CREATE VIRTUAL TABLE chunk_vectors USING vec0(chunk_id TEXT PRIMARY KEY, embedding FLOAT[512])
 ```
@@ -284,7 +314,7 @@ M6 三个演示场景（具体 Q&A 对）：
 
 - `pyproject.toml` 固定全部依赖版本；README 写明 Python ≥3.13、内置 SQLite ≥3.41（sqlite-vec 要求）
 - 数据资产：raw 文件为本人讲义，随仓库分发；sha256 记录在台账，任何人重跑可校验一致性
-- 一键跑通：`python -m src.pipeline all`（按序执行 ingest→parse→clean→chunk→annotate→qc→index），README 附预期输出
+- 一键跑通：`python -m src.pipeline all`（按序执行 ingest→parse→clean→chunk→annotate→export→qc→index→eval；eval 只做检索不调 LLM，全程无需 API key），README 附预期输出
 - 随机性来源：本管线无随机环节（切块确定性、检索确定性）；若后续引入采样，固定 seed 并写入 pipeline_runs.stats
 
 ## 12. 已定决策记录（v0.2 拍板）

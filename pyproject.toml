@@ -17,7 +17,7 @@ dependencies = [
     "jieba==0.42.1",        # M5 BM25 中文分词
     "rank_bm25==0.2.2",     # M5 BM25 召回
     "openai==2.14.0",       # M6 问答（DeepSeek 的 OpenAI 兼容模式）
-    # "datasette",          # M7 数据浏览呈现，版本待装时验证
+    "datasette==0.65.5",    # M7 数据浏览呈现
 ]
 
 [tool.setuptools]

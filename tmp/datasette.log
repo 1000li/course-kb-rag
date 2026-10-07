@@ -1,0 +1,14 @@
+INFO:     Started server process [5036]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64949 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64950 - "GET /course_kb/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64951 - "GET /course_kb/chunks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64952 - "GET /course_kb/chunk_vectors HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64953 - "GET /course_kb/chunks_by_version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64954 - "GET /course_kb/qc_latest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64955 - "GET /course_kb/cleaning_by_rule HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64956 - "GET /course_kb/eval_latest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64962 - "GET /course_kb/qc_latest.json?&_size=3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64963 - "GET / HTTP/1.1" 200 OK

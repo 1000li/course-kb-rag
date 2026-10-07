@@ -1,0 +1,35 @@
+databases:
+  course_kb:
+    queries:
+      chunks_by_version:
+        title: 各版本块数对比（按 content_type）
+        sql: |
+          SELECT d.version, c.content_type, COUNT(*) AS n,
+                 ROUND(AVG(c.char_count)) AS avg_chars
+          FROM chunks c JOIN documents d ON c.doc_id = d.doc_id
+          GROUP BY d.version, c.content_type
+          ORDER BY d.version, n DESC
+      qc_latest:
+        title: 质检报告（各版本最新一轮）
+        sql: |
+          SELECT q.doc_version, q.ran_at, q.chunk_count, q.empty_rate,
+                 q.dup_rate, q.lesson_order_ok, q.conclusion
+          FROM qc_reports q
+          JOIN (SELECT doc_version, MAX(ran_at) AS latest FROM qc_reports GROUP BY doc_version) t
+            ON q.doc_version = t.doc_version AND q.ran_at = t.latest
+          ORDER BY q.doc_version
+      cleaning_by_rule:
+        title: 清洗规则命中聚合（三版本合计）
+        sql: |
+          SELECT rule_id, action, COUNT(*) AS hits
+          FROM cleaning_log
+          GROUP BY rule_id, action
+          ORDER BY hits DESC
+      eval_latest:
+        title: 检索评估最近一次运行逐题明细
+        sql: |
+          SELECT r.qid, r.scope_doc_id, r.should_abstain, r.hit_at_5,
+                 r.first_hit_rank, ROUND(r.top1_score, 4) AS top1_rrf, r.abstained
+          FROM eval_results r
+          WHERE r.run_id = (SELECT run_id FROM eval_runs ORDER BY ran_at DESC LIMIT 1)
+          ORDER BY r.qid

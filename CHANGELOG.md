@@ -84,6 +84,15 @@
 - 已验证（无 LLM 路径）：超纲题（量子力学）拒答未调 LLM ✓；key 缺失时命中题给出明确指引 ✓；eval 集 q23 措辞在 v1.0 上拒答 ✓（版本对比机制成立）。
 - **发现（待裁决）**：§10 场景 3 的措辞「AI 的未来趋势有哪些？」在 v1.0 上**不拒答**——vec=0.206 命中 L7「未来展望：让AI向善而行」段。v1.0 确有未来相关内容，判定"有依据"并非全错；eval 集 q23 措辞（"在第几课？讲了什么？"）则正确拒答。该题不在评测集，无法靠重标定分离（会误伤可答题）。选项：a) 演示改用 q23 措辞；b) 接受 v1.0 从 L7 作答（语义上站得住）；c) 把该措辞补进评测集重新标定（预计不可行）。
 
+### M7 呈现 + 可复现 ✅
+
+- 出处修复：retrieve.cite() 节标题为空时省略节段（116 个无节块原会显示「第10课 · · P50」，现为「第10课 · P50-50」）。
+- 交付 `src/pipeline.py`：ingest→parse→clean→chunk→annotate→export→qc→index→eval 全链路（§11），各阶段可单独跑；eval 只检索不调 LLM，all 全程无需 API key。**干净副本重建验证通过**：挪走 db+interim+export 重跑 all，9 阶段输出与既有状态逐项一致（4 文档 / 14+15+15 课 / 221+230+230 块 / 640 向量 / recall@5=100% MRR=0.917），验证后恢复原 db（保留 pipeline_runs 历史）并重跑 qc 使样本文件 run_id 重新对齐。
+- Datasette：`scripts/serve_datasette.sh`（只读 -i，端口 8001）+ `scripts/datasette-metadata.yaml`（4 个预置查询：各版本块数对比 / qc 最新一轮 / 清洗规则聚合 / eval 最近一次逐题明细）。datasette==0.65.5 固定。冒烟：首页 + documents/chunks/chunk_vectors + 4 个 canned query 全部 200，验证后关进程。**Windows 两坑**：metadata 文件被按 GBK 读 → PYTHONUTF8=1；--load-extension 按「路径：入口」解析被 C:\ 盘符冒号误切 → vec0.dll 复制到仓库相对路径加载（scripts/vec0.dll 已入 .gitignore）。
+- 架构文档 §6 补齐 eval_runs/eval_results DDL（与 src/schema.sql 一致），§11 一键跑通命令补 export/eval 阶段。
+- README.md：环境要求 / 一键跑通预期输出 / .env 说明 / 三场景演示动线 / Datasette 入口 / 目录结构 / 可复现性。场景 3 用裁定措辞 q18「讲义中认为 AI 未来有哪些发展趋势？」——v1.0 从第 1/4/7 课拼凑浅层答案，v1.2 精准命中第 15 课；叙事为「旧版不是答不了，而是只能拼凑」。
+- 注意：本次验证期间 owner 有过一次 commit，把临时目录 tmp/m7_backup/ 提交了进去；该目录已在工作区删除（git status 显示 D），下次 commit 自然清掉。
+
 ## 经验总结（随项目持续补充）
 
 1. **raw 不可变 + 版本归集**是数据治理的基本功：源文件的问题（乱序/缺课/事实错误）不在源头修，而是归集新版本——这让"版本管理"从演示台词变成真实操作。
