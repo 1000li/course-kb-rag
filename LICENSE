@@ -1,0 +1,34 @@
+MIT License
+
+Copyright (c) 2026 Liu Yuqi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+附加说明：讲义内容版权
+
+本仓库 `data/raw/` 目录下的《人工智能主题课程讲义》全部版本（PDF/DOCX），
+以及由其派生的数据集文件（`data/export/`、`db/course_kb.db` 中的文本内容），
+其著作权归作者 Liu Yuqi 所有，**不适用上述 MIT 许可**。
+
+上述内容仅限学习、演示与评估目的使用；未经作者书面许可，不得用于商业用途
+（包括但不限于出版、培训、付费课程、商业产品训练语料）。
+
+上述 MIT 许可仅适用于本仓库的源代码（`src/`、`scripts/`、`web/`、`eval/` 等）。
