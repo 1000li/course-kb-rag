@@ -104,7 +104,7 @@
     margin:auto;width:100%;max-width:var(--composer-w);
     padding:28px 20px 34px;
   }
-  .welcome{text-align:center;}
+  .welcome{text-align:center;margin-bottom:16px;}
 
   /* ---------- 消息区：滚动容器 ---------- */
   .chat{
@@ -137,14 +137,22 @@
   .badge-a{background:var(--lemon);color:var(--ink);}
   .badge-o{background:var(--orange);color:#fff;}
   .msg-a .vtag{margin-left:auto;color:var(--muted);font-weight:700;letter-spacing:.1em;}
-  .msg-body{padding:13px 16px;white-space:pre-wrap;font-size:15px;word-break:break-word;}
+  .msg-body{padding:13px 16px;font-size:15px;word-break:break-word;}
+  /* 轻量 Markdown 渲染样式：段落间距、列表悬挂缩进、粗体/下划强调 */
+  .msg-body p{margin:0 0 10px;}
+  .msg-body p:last-child{margin-bottom:0;}
+  .msg-body .md-li{
+    padding-left:1.4em;text-indent:-1.4em;margin:3px 0;
+  }
+  .msg-body strong{font-weight:800;}
+  .msg-body em{font-style:normal;text-decoration:underline;}
 
   .msg-a.abstain{border-color:var(--orange);}
   .msg-a.abstain .msg-head{border-bottom-color:var(--orange);}
   .abstain-banner{border:2px solid var(--orange);margin:13px 14px 0;padding:11px 13px;}
   .abstain-title{color:var(--orange);font-size:17px;font-weight:900;letter-spacing:.08em;}
   .abstain-note{font-size:12px;color:#555;margin-top:5px;letter-spacing:.03em;}
-  .abstain-answer{margin:12px 14px;font-size:15px;}
+  .abstain-answer{margin:12px 14px;font-size:15px;white-space:pre-wrap;}
 
   .cites{margin:0 14px 12px;}
   .cites-label{
@@ -208,7 +216,7 @@
 
   /* 「更多示例 ▾」低调入口 + 展开的版本对比卡 */
   .more-toggle{
-    display:block;margin:14px auto 0;
+    display:block;margin:16px 0 0;   /* 左对齐（与卡片组/输入框左边缘对齐），与卡片组拉开间距 */
     border:1.5px solid var(--ink);background:var(--paper);
     color:var(--ikb);font-size:11.5px;font-weight:800;letter-spacing:.14em;
     padding:6px 13px;text-transform:uppercase;
@@ -217,7 +225,7 @@
   .more-toggle.open{background:var(--ikb);color:#fff;}
   .more-panel{display:none;margin-top:12px;text-align:left;}
   .more-panel.open{display:block;}
-  .welcome .more-panel .egroup{max-width:340px;margin:0 auto;}
+  .welcome .more-panel .egroup{max-width:340px;margin:8px 0 0;}
   .expanel .more-panel .egroup{max-width:340px;}
 
   /* 输入区上方的「示例」面板（问过问题后） */
@@ -231,7 +239,6 @@
   .expanel .example-grid{grid-template-columns:1fr 1fr;margin-top:0;gap:10px;}
   .expanel .egroup{padding:10px 11px;}
   .expanel .ecard{font-size:12px;padding:7px 9px;}
-  .expanel .more-toggle{margin-left:0;}
 
   /* ---------- 底部固定输入区 ---------- */
   .composer{
@@ -291,7 +298,8 @@
     .ecard{font-size:11px;padding:6px 7px;}
     .example-grid .ecard{height:50px;line-height:1.45;}
     .expanel .ecard{font-size:11px;}
-    .more-toggle{font-size:10.5px;margin-top:10px;padding:5px 11px;}
+    .more-toggle{font-size:10.5px;margin-top:12px;padding:5px 11px;}
+    .welcome{margin-bottom:12px;}
     .expanel{margin:0 12px 9px;padding:11px 12px;}
     .composer{padding:0 12px 10px;}
     .app.onboarding .composer{padding:0;}
@@ -468,6 +476,42 @@
     return el('span', 'tag ' + cls, label);
   }
 
+  /* ================= 轻量 Markdown 渲染 =================
+     先 escape 全部 HTML 再替换，LLM 内容注入安全；只影响回答正文，
+     出处标签/拒答文案/错误提示仍走 textContent 不受影响。 */
+  const HTML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => HTML_ESC[c]);
+  }
+  function inlineMd(s) {
+    return s
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')   // **粗体** → strong（瑞士风：加粗）
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>');              // *斜体* → em（下划线，避免孤立 * 残留）
+  }
+  function renderAnswer(text) {
+    const LIST_RE = /^\s*(?:[-•*]|\d+\.)\s+/;              // 行首列表标记：- • * 或 1.
+    const lines = escapeHtml(text).trim().split('\n');
+    const out = [];
+    let para = [];
+    const flush = () => {
+      if (para.length) out.push('<p>' + para.map(inlineMd).join('<br>') + '</p>');
+      para = [];
+    };
+    for (const line of lines) {
+      const t = line.trim();
+      if (t === '') {
+        flush();                                          // 空行 = 段落分隔
+      } else if (LIST_RE.test(t)) {
+        flush();
+        out.push('<div class="md-li">' + inlineMd(line) + '</div>');  // 列表行：保留换行缩进
+      } else {
+        para.push(line);
+      }
+    }
+    flush();
+    return out.join('');
+  }
+
   /* ================= 消息渲染 ================= */
   function pushQ(text, version) {
     const wrap = el('div', 'msg msg-q');
@@ -494,7 +538,7 @@
       body.appendChild(banner);
       body.appendChild(el('div', 'abstain-answer', d.answer));
     } else {
-      body.textContent = d.answer;
+      body.innerHTML = renderAnswer(d.answer);
     }
     m.appendChild(body);
 
