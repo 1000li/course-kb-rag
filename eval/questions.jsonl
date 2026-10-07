@@ -26,3 +26,6 @@
 {"qid": "q26", "question": "transformer是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [7], "should_abstain": false, "note": "拉丁缩写词义题：L7专讲Transformer与GPT"}
 {"qid": "q27", "question": "CNN是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [8], "should_abstain": false, "note": "讲义仅在L8提及CNN卷积运算原理（doc_004共2块提及CNN），非专讲"}
 {"qid": "q28", "question": "RNN是什么意思？", "scope_doc_id": "doc_004", "expected_lesson_no": [], "should_abstain": true, "note": "超纲：doc_004共0块提及RNN，应拒答"}
+{"qid": "q29", "question": "第1课的思考题是什么？", "scope_doc_id": "doc_004", "expected_lesson_no": [1], "should_abstain": false, "calibration": false, "note": "查询理解回归题：课号识别scope到L1。calibration=false：课内小语料的vec/BM25绝对分值与全库标定的双信号阈值不可比，课号scope题改走qa空scope拒答口径，不参与标定"}
+{"qid": "q30", "question": "第五课的讨论问题", "scope_doc_id": "doc_004", "expected_lesson_no": [5], "should_abstain": false, "calibration": false, "note": "查询理解回归题：中文数字课号+同义词扩展（讨论→思考题）。calibration=false 原因同 q29"}
+{"qid": "q31", "question": "我想知道第一课有什么作业", "scope_doc_id": "doc_004", "expected_lesson_no": [1], "should_abstain": false, "calibration": false, "note": "查询理解回归题：用户原话（曾被双信号与门误拒 maxVec=0.0064），课号scope L1+作业→思考题/课后任务/练习扩展，应命中L1课后任务块。calibration=false 原因同 q29"}
