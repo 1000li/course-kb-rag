@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: course-kb-rag
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEMO_TOKEN
+        sync: false
+      - key: PYTHONUTF8
+        value: "1"
