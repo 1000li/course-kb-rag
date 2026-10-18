@@ -8,3 +8,6 @@ data/kb.sqlite
 tmp/v12/
 scripts/vec0.dll
 *.egg-info/
+tmp/demo_video/
+tmp/verify_cover*.png
+tmp/docx_imgs/
