@@ -7,6 +7,10 @@ ENV PYTHONUTF8=1 \
 
 WORKDIR /app
 
+# onnxruntime（fastembed 依赖）在 Debian slim 上需要 libgomp1
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 # 依赖层（pyproject.toml 固定全部版本）
 COPY pyproject.toml README.md ./
 COPY src ./src
